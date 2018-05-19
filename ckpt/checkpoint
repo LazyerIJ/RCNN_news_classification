@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/lazyer/Inju/Study/Learning/Practice/classification/bbc_classification2/ckpt/cbow_movie_embeddings.ckpt"
+all_model_checkpoint_paths: "/home/lazyer/Inju/Study/Learning/Practice/classification/bbc_classification2/ckpt/cbow_movie_embeddings.ckpt"
