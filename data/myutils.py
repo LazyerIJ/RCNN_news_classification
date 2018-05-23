@@ -66,7 +66,7 @@ def clean_str(string):
 
 def cleaning_data(texts):
     print('[*]run cleaning_data..')
-    fname = 'data/ckpt/processed_data.pkl'
+    fname = 'ckpt/processed_data.pkl'
 
     if os.path.isfile(fname):
         print('[*]get processed_data..')

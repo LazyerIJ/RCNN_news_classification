@@ -63,14 +63,18 @@ if __name__=='__main__':
                 loss+=l
                 count+=1
 
+            feed_dict={test.input_x:data.x_train,test.input_y:data.y_train,test.seqlen:data.len_train,test.phase:False}
+            input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
+
+            feed_dict={test.input_embed:input_embed,test.input_y:data.y_train,test.seqlen:data.len_train,test.phase:True}
+            l1,acc1,a,b = sess.run([test.loss,test.accuracy,test.a,test.b],feed_dict=feed_dict) 
+
             feed_dict={test.input_x:data.x_test,test.input_y:data.y_test,test.seqlen:data.len_test,test.phase:False}
             input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
 
             feed_dict={test.input_embed:input_embed,test.input_y:data.y_test,test.seqlen:data.len_test,test.phase:False}
-            acc,a,b = sess.run([test.accuracy,test.a,test.b],feed_dict=feed_dict) 
+            l2,acc2,a,b = sess.run([test.loss,test.accuracy,test.a,test.b],feed_dict=feed_dict) 
             
-            print("[%d][loss]%0.4f [accyracy]%0.4f"%(step,loss/count,acc))
-            print(a[:20])
-            print(b[:20])
+            print("[%d][train_loss]%0.4f [train_accuracy]%0.4f [test_loss]%0.4f [test_accuracy]%0.4f"%(step,l1,acc1,l2,acc2))
         print("finished")
 
