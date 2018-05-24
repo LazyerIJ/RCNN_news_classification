@@ -42,38 +42,31 @@ if __name__=='__main__':
         model_checkpoint_path = os.path.join(data_folder_name,'cbow_movie_embeddings.ckpt')
         saver = tf.train.Saver({"embeddings": test.embeddings})
         saver.restore(sess, model_checkpoint_path)
-        i = 0
+        i=0
         for step in range(params_rnn.train_epoch):
             loss=0.0 
             count=1
             a=[]
             b=[]
             for a,b,c in data.next_batch(params_rnn.batch_size):
-                i+=1
-
-                ##get embeded input
-                feed_dict={test.input_x:a,test.input_y:b,test.seqlen:c,test.phase:False}
+                feed_dict={test.input_x:a}
                 input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
-
-                ##cnn-rnn learning
                 feed_dict={test.input_embed:input_embed,test.input_y:b,test.seqlen:c,test.phase:True}
-                l,_,a,b,summ=sess.run([test.loss,test.train_step,test.a,test.b,test.merged],feed_dict=feed_dict)
+                l,_,=sess.run([test.loss,test.train_step],feed_dict=feed_dict)
 
                 #writer.add_summary(summ,i) 
-                loss+=l
-                count+=1
-
-            feed_dict={test.input_x:data.x_train,test.input_y:data.y_train,test.seqlen:data.len_train,test.phase:False}
+            feed_dict={test.input_x:data.x_train}
             input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
 
             feed_dict={test.input_embed:input_embed,test.input_y:data.y_train,test.seqlen:data.len_train,test.phase:True}
-            l1,acc1,a,b = sess.run([test.loss,test.accuracy,test.a,test.b],feed_dict=feed_dict) 
-
-            feed_dict={test.input_x:data.x_test,test.input_y:data.y_test,test.seqlen:data.len_test,test.phase:False}
+            l1,acc1,summ = sess.run([test.loss,test.accuracy,test.merged],feed_dict=feed_dict) 
+            writer.add_summary(summ,i) 
+            i+=1
+            feed_dict={test.input_x:data.x_test}
             input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
 
             feed_dict={test.input_embed:input_embed,test.input_y:data.y_test,test.seqlen:data.len_test,test.phase:False}
-            l2,acc2,a,b = sess.run([test.loss,test.accuracy,test.a,test.b],feed_dict=feed_dict) 
+            l2,acc2 = sess.run([test.loss,test.accuracy],feed_dict=feed_dict) 
             
             print("[%d][train_loss]%0.4f [train_accuracy]%0.4f [test_loss]%0.4f [test_accuracy]%0.4f"%(step,l1,acc1,l2,acc2))
         print("finished")
