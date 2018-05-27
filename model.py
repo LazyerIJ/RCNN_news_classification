@@ -8,66 +8,78 @@ import numpy as np
 
 
 if __name__=='__main__':
-
     with tf.Session() as sess:
 
-        data_folder_name='ckpt'
+        datapath = 'data/Categories/'
+        batch_size = params_rnn.batch_size
+        train_writer = tf.summary.FileWriter('./NCLS_log/train',sess.graph)
+        test_writer = tf.summary.FileWriter('./NCLS_log/test',sess.graph)
 
-        data = DataFeeder(vocabulary_size=params_share.vocabulary_size,
-                   bank_size=params_rnn.bank_size,
-                   split_rate=params_rnn.split_rate,
-                   max_len_sen=params_share.max_len_sen,
-                   processes=True,
-                   endtoken="endtoken")
+        data = DataFeeder(datapath=datapath,
+                       bank_size=params_rnn.bank_size,
+                       split_rate=params_rnn.split_rate,
+                       max_len_sen=params_share.max_len_sen,
+                       max_len_news=params_share.max_len_news,
+                       embedding_size=params_share.embedding_size,
+                       endtoken="endtoken")
 
-        data.process_data(max_len_word=params_share.max_len_word)
-
-        test = LSTM(rnn_size = params_rnn.rnn_size,
+        model = LSTM(rnn_size = params_rnn.rnn_size,
                     learning_rate=params_rnn.learning_rate,
                     layer_depth = params_rnn.layer_depth,
                     batch_size=params_rnn.batch_size,
-                    vocabulary_size=params_share.vocabulary_size,
                     embedding_size=params_share.embedding_size,
                     max_len_sen=params_share.max_len_sen,
-                    max_len_word=params_share.max_len_word)
-        print('[*]vocabulary_size : ' , test.vocabulary_size)
-        print('[*]embedding  size : ' , test.embedding_size)
-
-        writer = tf.summary.FileWriter('./board/train', sess.graph)
-
+                    max_len_news=params_share.max_len_news,
+                    max_pool_size=params_rnn.max_pool_size)
 
         sess.run(tf.global_variables_initializer())
 
-        # Load model embeddings
-        model_checkpoint_path = os.path.join(data_folder_name,'cbow_movie_embeddings.ckpt')
-        saver = tf.train.Saver({"embeddings": test.embeddings})
-        saver.restore(sess, model_checkpoint_path)
-        i=0
-        for step in range(params_rnn.train_epoch):
-            loss=0.0 
-            count=1
-            a=[]
-            b=[]
-            for a,b,c in data.next_batch(params_rnn.batch_size):
-                feed_dict={test.input_x:a}
-                input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
-                feed_dict={test.input_embed:input_embed,test.input_y:b,test.seqlen:c,test.phase:True}
-                l,_,=sess.run([test.loss,test.train_step],feed_dict=feed_dict)
+        train_merge_step=0
 
-                #writer.add_summary(summ,i) 
-            feed_dict={test.input_x:data.x_train}
-            input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
+        for i in range(params_rnn.train_epoch):
+            ix = len(data.y_train)
+            idx = np.random.choice(ix,ix,replace=False)
+            loss=0.0
+            count=0
+            acc=0.0
 
-            feed_dict={test.input_embed:input_embed,test.input_y:data.y_train,test.seqlen:data.len_train,test.phase:True}
-            l1,acc1,summ = sess.run([test.loss,test.accuracy,test.merged],feed_dict=feed_dict) 
-            writer.add_summary(summ,i) 
-            i+=1
-            feed_dict={test.input_x:data.x_test}
-            input_embed = sess.run(test.input_embeded,feed_dict=feed_dict)
+            for step in range(len(idx)//params_rnn.batch_size):
 
-            feed_dict={test.input_embed:input_embed,test.input_y:data.y_test,test.seqlen:data.len_test,test.phase:False}
-            l2,acc2 = sess.run([test.loss,test.accuracy],feed_dict=feed_dict) 
-            
-            print("[%d][train_loss]%0.4f [train_accuracy]%0.4f [test_loss]%0.4f [test_accuracy]%0.4f"%(step,l1,acc1,l2,acc2))
-        print("finished")
+                ix = idx[step*batch_size:(step+1)*batch_size]
 
+                x,y,x_len = data.next_batch(data.x_train,data.y_train,ix)
+
+                feed_dict={model.input_embed:x,
+                           model.input_y:y,
+                           model.seqlen:x_len,
+                           model.phase:True}
+
+                l1,_,acc1,train_merge=sess.run([model.loss,
+                                                model.train_step,
+                                                model.accuracy,
+                                                model.merged],
+                                               feed_dict=feed_dict)
+
+                train_writer.add_summary(train_merge,train_merge_step)
+                train_merge_step+=1
+                count+=1
+                loss+=l1
+                acc+=acc1
+
+
+            x,y,x_len = data.next_batch(data.x_train,data.y_train,
+                                    list(range(len(data.y_test))))
+
+            feed_dict={model.input_embed:x,
+                       model.input_y:y,
+                       model.seqlen:x_len,
+                       model.phase:False}
+
+            l2,acc2,test_merge = sess.run([model.loss,
+                                           model.accuracy,
+                                           model.merged],
+                                          feed_dict=feed_dict) 
+
+            test_writer.add_summary(test_merge,i)
+
+            print("[%d][train_loss]%0.4f [train_accuracy]%0.4f [test_loss]%0.4f [test_accuracy]%0.4f"%(i,loss/count,acc/count,l2,acc2))
