@@ -17,7 +17,7 @@ params_rnn = ({
     'rnn_size':512,
     'layer_depth':1,
     'train_epoch':10000,
-    'learning_rate':0.0001,
+    'learning_rate':0.001,
     'max_pool_size':4
 })
 
