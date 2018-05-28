@@ -81,5 +81,4 @@ if __name__=='__main__':
                                           feed_dict=feed_dict) 
 
             test_writer.add_summary(test_merge,i)
-
             print("[%d][train_loss]%0.4f [train_accuracy]%0.4f [test_loss]%0.4f [test_accuracy]%0.4f"%(i,loss/count,acc/count,l2,acc2))

@@ -90,6 +90,7 @@ class LSTM():
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
             self.train_step = tf.train.GradientDescentOptimizer(params_rnn.learning_rate).minimize(self.loss)
+
         #self.train_step = tf.train.GradientDescentOptimizer(params_rnn.learning_rate).minimize(self.loss)
         self.correct_prediction = tf.equal(tf.argmax(self.logits,1), tf.argmax(self.input_y,1))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, "float32"))
