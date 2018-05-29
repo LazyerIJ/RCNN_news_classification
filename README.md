@@ -1,27 +1,23 @@
-[data]
+## Get Data
 
+- open [webhose.io](https://webhose.io/datasets/) site and Sign in
+- In **Free Datasets** Banner, find **News articles by category**
+- Download some categories and unzip file under **data/Categories**
+<br>
+- **cd data**
+- **python3 makecsv.py --data_dir Categories**
+<br>
 
-dataset : get from 'Webhose.io' English News. 
+---
+## Run
 
-download zip file and make csv files like 
+- **cd ..**
+- **python3 model.py**
 
-...
+----
 
-data/Categories/temp1.csv
+## Config
 
-data/Categories/temp2.csv
+- You can edit config params at **data/myparams.py**
 
-...
-
-csv format
-
-header : text, type
-
-example: "Trumph is president .." "Politics"
-
-
-[run]
-
-python3 model.py
-
-
+---
