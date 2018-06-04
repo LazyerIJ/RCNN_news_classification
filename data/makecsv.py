@@ -33,7 +33,7 @@ if __name__=='__main__':
                 with open(os.path.join(category,f),'r') as jf:
                     try:
                         data = json.load(jf)
-                        writer.writerow([data['text'],data_path[:-1]])
+                        writer.writerow([data['text'],category])
                         write_csv_nums +=1
                     except:
                         pass

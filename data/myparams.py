@@ -5,19 +5,19 @@ params_share = ({
     'embedding_size' : 100,
     'max_len_sen':15,#padding word
     'max_len_news':10,#padding sentence
-    'label_num':5
+    'label_num':3
 })
 params_share = tf.contrib.training.HParams(**params_share)
 
 params_rnn = ({
-    'split_rate':0.9,
-    'batch_size':50,
-    'num_filters':64,
-    'bank_size':[3,4,5],
-    'rnn_size':512,
-    'layer_depth':1,
+    'split_rate':0.8,
+    'batch_size':3,
+    'num_filters':16,
+    'bank_size':[3,5],
+    'rnn_size':256,
+    'layer_depth':3,
     'train_epoch':10000,
-    'learning_rate':0.001,
+    'learning_rate':0.02,
     'max_pool_size':4
 })
 

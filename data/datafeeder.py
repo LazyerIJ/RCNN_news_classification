@@ -111,6 +111,20 @@ class DataFeeder():
     def next_batch(self,x,y,ix):
         batch_x = x[ix]
         batch_y = y[ix]
+        batch_x_len = [len(news.split("endtoken")) for news in batch_x]
+
+        batch_x_sen = []
+
+        for step in range(self.max_len_news):
+            sen_len = []
+            for news in batch_x:
+                try:
+                    sen_len.append(len(news.split("endtoken")[step].split()))
+                except:
+                    sen_len.append(0)
+            batch_x_sen.append(sen_len)
+
+
         batch_x_vec, batch_x_len = self.make_vec_data(batch_x) 
 
         batch_x_vec = [utils.padding_sentence(news,self.max_len_sen,self.embedding_size) for news in batch_x_vec]
@@ -118,7 +132,7 @@ class DataFeeder():
 
         batch_x_vec = [utils.padding_news(news,self.embedding_size,self.max_len_news,self.max_len_sen) for news in batch_x_vec]
 
-        return np.array(batch_x_vec),np.array(batch_y),np.array(batch_x_len)
+        return np.array(batch_x_vec),np.array(batch_y),np.array(batch_x_len),np.array(batch_x_sen)
 
 
 if __name__=='__main__':
